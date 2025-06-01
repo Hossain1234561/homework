@@ -1,0 +1,167 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_SONGS 7
+#define MAX_MEMBERS 7
+#define MAX_ATTEMPTS 2
+#define MAX_INPUT 100
+
+const char *members[MAX_MEMBERS][2] = {
+    {"Youngjin", "YJ"},
+    {"Arthur", "AR"},
+    {"Lina", "LN"},
+    {"Kai", "KI"},
+    {"Mina", "MN"},
+    {"Sora", "SR"},
+    {"Juno", "JN"}
+};
+
+typedef struct {
+    char title[MAX_INPUT];
+    char initials[MAX_INPUT];
+    char lyrics[MAX_INPUT];
+} KpopSong;
+
+KpopSong songList[MAX_SONGS];
+int songCount = 0;
+int completedMembers[MAX_MEMBERS] = {0};
+
+void extractConsonant(const char *title, char *initials) {
+    int j = 0;
+    for (int i = 0; title[i]; i++) {
+        if ((title[i] & 0xC0) != 0x80)
+            initials[j++] = title[i];
+    }
+    initials[j] = '\0';
+}
+
+void inputKpopSongInitials() {
+    char title[MAX_INPUT], lyrics[MAX_INPUT];
+    while (songCount < MAX_SONGS) {
+        printf("Enter song title (or 'done'): ");
+        fgets(title, MAX_INPUT, stdin);
+        title[strcspn(title, "\n")] = '\0';
+        if (strcmp(title, "done") == 0) break;
+
+        printf("Enter part of lyrics: ");
+        fgets(lyrics, MAX_INPUT, stdin);
+        lyrics[strcspn(lyrics, "\n")] = '\0';
+
+        strcpy(songList[songCount].title, title);
+        strcpy(songList[songCount].lyrics, lyrics);
+        extractConsonant(title, songList[songCount].initials);
+        songCount++;
+    }
+}
+
+int checkKpopSongTitle(const char *input, const char *initials) {
+    char inputInitials[MAX_INPUT];
+    extractConsonant(input, inputInitials);
+    return strcmp(inputInitials, initials) == 0;
+}
+
+int allMembersCompleted() {
+    for (int i = 0; i < MAX_MEMBERS; i++)
+        if (!completedMembers[i]) return 0;
+    return 1;
+}
+
+int getBlackKnight(int currentIndex) {
+    int newIndex;
+    do {
+        newIndex = rand() % MAX_MEMBERS;
+    } while (newIndex == currentIndex || completedMembers[newIndex]);
+    return newIndex;
+}
+
+void inputSongTitle(int songIndex, int memberIndex) {
+    char input[MAX_INPUT];
+    int attempts = 0;
+
+    while (attempts < MAX_ATTEMPTS) {
+        printf("[%s] Enter title for (%s): ", members[memberIndex][1], songList[songIndex].initials);
+        fgets(input, MAX_INPUT, stdin);
+        input[strcspn(input, "\n")] = '\0';
+
+        if (checkKpopSongTitle(input, songList[songIndex].initials)) {
+            printf("%s completed the mission!\n", members[memberIndex][0]);
+            completedMembers[memberIndex] = 1;
+            return;
+        }
+        attempts++;
+    }
+
+    int blackKnight = getBlackKnight(memberIndex);
+    printf("%s failed. %s will try!\n", members[memberIndex][0], members[blackKnight][0]);
+
+    attempts = 0;
+    while (attempts < MAX_ATTEMPTS) {
+        printf("[%s] Try title for (%s): ", members[blackKnight][1], songList[songIndex].initials);
+        fgets(input, MAX_INPUT, stdin);
+        input[strcspn(input, "\n")] = '\0';
+
+        if (checkKpopSongTitle(input, songList[songIndex].initials)) {
+            printf("%s completed the mission!\n", members[blackKnight][0]);
+            completedMembers[blackKnight] = 1;
+            return;
+        }
+        attempts++;
+    }
+
+    printf("Mission failed. Try again!\n");
+}
+
+void bonusMission(int songIndex) {
+    char input[MAX_INPUT];
+    printf("Guess the song from lyrics: %s\n", songList[songIndex].lyrics);
+    printf("Enter title: ");
+    fgets(input, MAX_INPUT, stdin);
+    input[strcspn(input, "\n")] = '\0';
+
+    if (strcmp(input, songList[songIndex].title) == 0)
+        printf("Correct!\n");
+    else
+        printf("Wrong title.\n");
+}
+
+void completeMission() {
+    srand(time(NULL));
+    if (songCount == 0) {
+        printf("Add songs first!\n");
+        return;
+    }
+
+    int currentSong = 0;
+    for (int i = 0; i < MAX_MEMBERS && currentSong < songCount; i++) {
+        if (!completedMembers[i]) {
+            inputSongTitle(currentSong++, i);
+        }
+    }
+
+    if (allMembersCompleted())
+        printf("Great teamwork!\n");
+}
+
+void teamworkMenu() {
+    int choice;
+    while (1) {
+        printf("\n[Menu]\n");
+        printf("1. Input Songs\n");
+        printf("2. Start Mission\n");
+        printf("3. Bonus Mission\n");
+        printf("4. Exit\n");
+        printf("Choice: ");
+        scanf("%d", &choice);
+        getchar();
+
+        if (choice == 1) inputKpopSongInitials();
+        else if (choice == 2) completeMission();
+        else if (choice == 3) {
+            if (songCount > 0) bonusMission(rand() % songCount);
+            else printf("No songs yet!\n");
+        } else if (choice == 4) break;
+        else printf("Invalid!\n");
+    }
+}
