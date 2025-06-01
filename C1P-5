@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_DIET 7
+#define MAX_CAL 1500
+
+const int validCalories[] = {100, 150, 200, 250, 300};
+
+char foods[MAX_DIET][50];
+int calories[MAX_DIET];
+int count = 0;
+
+int isValid(int cal) {
+    for (int i = 0; i < 5; i++)
+        if (cal == validCalories[i]) return 1;
+    return 0;
+}
+
+void setMyDailyFood() {
+    char name[50];
+    int cal, total = 0;
+
+    while (count < MAX_DIET && total < MAX_CAL) {
+        printf("Food name: ");
+        fgets(name, sizeof(name), stdin);
+        name[strcspn(name, "\n")] = 0;
+
+        printf("Calories (100-300): ");
+        scanf("%d", &cal);
+        getchar();
+
+        if (!isValid(cal) || total + cal > MAX_CAL) {
+            printf("Invalid or over 1500 cal.\n");
+            break;
+        }
+
+        strcpy(foods[count], name);
+        calories[count++] = cal;
+        total += cal;
+
+        printf("Total: %d cal\n", total);
+    }
+}
+
+void menuProblem4() {
+    int choice;
+    while (1) {
+        printf("\n1. Record Diet\n2. Exit\n> ");
+        scanf("%d", &choice);
+        getchar();
+        if (choice == 1) setMyDailyFood();
+        else if (choice == 2) break;
+    }
+}
