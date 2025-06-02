@@ -1,0 +1,89 @@
+#include <stdio.h>
+#include <math.h>
+
+#define MEMBERS 4
+#define CATEGORIES 9
+#define MIN_SCORE 60 // Example minimum individual score
+
+// Enum for categories
+typedef enum {
+    PHYSICAL, KNOWLEDGE, SELF, TEAMWORK,
+    KOREAN, VOCAL, DANCE, VISUAL, ACTING
+} Category;
+
+const char *category_names[CATEGORIES] = {
+    "Physical Strength", "Knowledge", "Self-Management", "Teamwork",
+    "Korean Language", "Vocal", "Dance", "Visual", "Acting"
+};
+
+int main() {
+    int scores[MEMBERS][CATEGORIES];
+    int sum_scores[CATEGORIES] = {0};
+    int i, j;
+
+    // Input scores for each member and category
+    for (i = 0; i < MEMBERS; i++) {
+        printf("Enter scores for Member %d (0-100):\n", i + 1);
+        for (j = 0; j < CATEGORIES; j++) {
+            printf("%s: ", category_names[j]);
+            scanf("%d", &scores[i][j]);
+
+            // Check minimum individual score
+            if (scores[i][j] < MIN_SCORE) {
+                printf("\nMinimum required score is %d.\n", MIN_SCORE);
+                printf("All members must retake '%s'.\n", category_names[j]);
+                return 0;
+            }
+            sum_scores[j] += scores[i][j];
+        }
+    }
+
+    // Calculate team average score
+    int total = 0;
+    for (i = 0; i < CATEGORIES; i++) {
+        total += sum_scores[i];
+    }
+    int avg = total / (MEMBERS * CATEGORIES);
+
+    printf("\nTeam Average Score: %d\n", avg);
+
+    // Decision logic
+    switch (avg / 10) {
+        case 10:
+        case 9:
+            if (avg >= 95) {
+                printf("Congratulations! Your stage debut is confirmed!\n");
+            } else {
+                printf("The Debut Certification Team will hold a final evaluation meeting to make a decision.\n");
+            }
+            break;
+        case 8: {
+            // Find the 3 lowest-scoring categories
+            int category_avg[CATEGORIES];
+            for (i = 0; i < CATEGORIES; i++) {
+                category_avg[i] = sum_scores[i] / MEMBERS;
+            }
+
+            // Find 3 lowest
+            int idx1 = 0, idx2 = 1, idx3 = 2;
+            for (i = 0; i < CATEGORIES; i++) {
+                if (category_avg[i] < category_avg[idx1]) idx1 = i;
+            }
+            for (i = 0; i < CATEGORIES; i++) {
+                if (i != idx1 && category_avg[i] < category_avg[idx2]) idx2 = i;
+            }
+            for (i = 0; i < CATEGORIES; i++) {
+                if (i != idx1 && i != idx2 && category_avg[i] < category_avg[idx3]) idx3 = i;
+            }
+
+            printf("Retake the three lowest-scoring categories (%s, %s, %s) after 30 days.\n",
+                category_names[idx1], category_names[idx2], category_names[idx3]);
+            break;
+        }
+        default:
+            printf("Team average score too low for debut.\n");
+            break;
+    }
+
+    return 0;
+}
