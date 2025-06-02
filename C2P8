@@ -1,0 +1,60 @@
+#include <stdio.h>
+
+typedef struct {
+    char menuID;
+    char memberNick[5];
+} DashboardEntry;
+
+const char members[2][2][10] = {
+    {"Go Eun", "GE"},
+    {"Arthur", "AR"}
+};
+
+DashboardEntry myDashboard;
+
+void selectMember(char *nick) {
+    int choice;
+    printf("Select member:\n1. Go Eun (GE)\n2. Arthur (AR)\nChoice: ");
+    scanf("%d", &choice);
+    if (choice == 1) {
+        nick[0] = 'G'; nick[1] = 'E'; nick[2] = '\0';
+    } else if (choice == 2) {
+        nick[0] = 'A'; nick[1] = 'R'; nick[2] = '\0';
+    } else {
+        printf("Invalid choice.\n");
+        nick[0] = '\0';
+    }
+}
+
+void selectSubMenu() {
+    char menu;
+    printf("Select one menu:\nA. Mentoring\nB. Trauma Management\nD. Self-Reflection\nE. Journey Log\nF. Emotion Diary\nChoice: ");
+    scanf(" %c", &menu);
+    myDashboard.menuID = menu;
+}
+
+void displayDashboard() {
+    printf("\nDashboard for %s\n", myDashboard.memberNick);
+    if (myDashboard.menuID == 'A')
+        printf("Mentoring: Mentor ID M123, Name Jin\n");
+    else if (myDashboard.menuID == 'B')
+        printf("Trauma: Stage fright, Counseling weekly\n");
+    else if (myDashboard.menuID == 'D')
+        printf("Self-Reflection: Today I achieved my task.\n");
+    else if (myDashboard.menuID == 'E')
+        printf("Journey Log: Finished mission, Wow effect 9.\n");
+    else if (myDashboard.menuID == 'F')
+        printf("Emotion Diary: Feeling calm and focused.\n");
+    else
+        printf("No data.\n");
+}
+
+int main() {
+    selectMember(myDashboard.memberNick);
+    if (myDashboard.memberNick[0] == '\0') return 0;
+
+    selectSubMenu();
+    displayDashboard();
+
+    return 0;
+}
