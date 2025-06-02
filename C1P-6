@@ -1,0 +1,90 @@
+// File: stage1.c
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_LOG 10
+
+// Struct for diet record
+typedef struct {
+    char food[50];
+    int calories;
+} DietLog;
+
+// Queue for diet records
+DietLog dietQueue[MAX_LOG];
+int front = 0, rear = 0;
+
+// Exercise types and calorie burn
+int exerciseCalories[] = {0, 200, 250, 300, 150, 250, 300, 100};
+const char *exerciseTypes[] = {
+    "",  // Placeholder for index 0
+    "30 minutes of brisk walking or jogging",
+    "Full body strength training",
+    "30 minutes of swimming or cycling",
+    "30 minutes of stretching and yoga",
+    "30 minutes of dance or aerobics",
+    "Tennis, Badminton, Dance",
+    "A light walk"
+};
+
+// Function to add diet log
+void addDiet(const char *food, int calories) {
+    if ((rear + 1) % MAX_LOG == front) {
+        printf("Diet log is full!\n");
+        return;
+    }
+    strcpy(dietQueue[rear].food, food);
+    dietQueue[rear].calories = calories;
+    rear = (rear + 1) % MAX_LOG;
+}
+
+// Function to manage daily calorie log
+void mngMyDailyCalorie() {
+    int exerciseType;
+    printf("\nChoose your exercise type:\n");
+    for (int i = 1; i <= 7; i++) {
+        printf("%d. %s (%d cal)\n", i, exerciseTypes[i], exerciseCalories[i]);
+    }
+    printf("Select: ");
+    scanf("%d", &exerciseType);
+
+    if (exerciseType < 1 || exerciseType > 7) {
+        printf("Invalid exercise type.\n");
+        return;
+    }
+
+    int burned = exerciseCalories[exerciseType];
+    if (front == rear) {
+        printf("No diet log to manage.\n");
+        return;
+    }
+
+    if (dietQueue[front].calories <= burned) {
+        printf("Calories burned: %d. Removed '%s' (%d cal) from log.\n", 
+               burned, dietQueue[front].food, dietQueue[front].calories);
+        front = (front + 1) % MAX_LOG;
+    } else {
+        printf("Not enough exercise to remove '%s' (%d cal).\n", 
+               dietQueue[front].food, dietQueue[front].calories);
+    }
+
+    // Display remaining log
+    printf("\nRemaining Diet Log:\n");
+    int i = front, total = 0;
+    while (i != rear) {
+        printf("- %s (%d cal)\n", dietQueue[i].food, dietQueue[i].calories);
+        total += dietQueue[i].calories;
+        i = (i + 1) % MAX_LOG;
+    }
+    printf("Total remaining calories: %d\n", total);
+}
+
+// Sample main for testing
+int main() {
+    addDiet("Fried Chicken", 500);
+    addDiet("Salad", 150);
+    addDiet("Burger", 600);
+
+    mngMyDailyCalorie();
+    return 0;
+}
