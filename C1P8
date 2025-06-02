@@ -1,0 +1,107 @@
+#include <stdio.h>
+#include <math.h>
+
+#define CATEGORY_COUNT 9
+#define MAX_EXAMS 9
+#define ROOM_COUNT 10
+
+// One-dimensional arrays
+char categories[CATEGORY_COUNT][20] = {
+    "Physical Strength", "Knowledge", "Self-Management", "Teamwork",
+    "Korean Language", "Vocal", "Dance", "Visual", "Acting"
+};
+
+int exam_dates[MAX_EXAMS]; // YYYYMMDD
+int selected_categories[MAX_EXAMS]; // Index of selected categories
+int exam_count = 0;
+int start_date;
+
+// Function to extract day count from YYYYMMDD (approximate)
+int date_to_days(int yyyymmdd) {
+    int y = yyyymmdd / 10000;
+    int m = (yyyymmdd / 100) % 100;
+    int d = yyyymmdd % 100;
+    return y * 365 + m * 30 + d; // rough conversion
+}
+
+void schedule_exam() {
+    int cat, date;
+
+    printf("Select training category (0-8):\n");
+    for (int i = 0; i < CATEGORY_COUNT; i++) {
+        printf("%d. %s\n", i, categories[i]);
+    }
+    scanf("%d", &cat);
+
+    if (cat < 0 || cat >= CATEGORY_COUNT) {
+        printf("Invalid category.\n");
+        return;
+    }
+
+    printf("Enter exam date (YYYYMMDD): ");
+    scanf("%d", &date);
+
+    int delta = date_to_days(date) - date_to_days(start_date);
+    if (delta < 30 || delta > 100) {
+        printf("Exam date must be 30-100 days from training start.\n");
+        return;
+    }
+
+    selected_categories[exam_count] = cat;
+    exam_dates[exam_count] = date;
+    exam_count++;
+
+    printf("Exam for '%s' scheduled on %d.\n", categories[cat], date);
+}
+
+void show_reminders(int current_date) {
+    int current_days = date_to_days(current_date);
+    for (int i = 0; i < exam_count; i++) {
+        int days_until = date_to_days(exam_dates[i]) - current_days;
+        if (days_until <= 10 && days_until >= 0) {
+            printf("Reminder: Exam for '%s' is in %d day(s) on %d.\n",
+                   categories[selected_categories[i]], days_until, exam_dates[i]);
+        }
+    }
+}
+
+void assign_exam_room(int current_date) {
+    for (int i = 0; i < exam_count; i++) {
+        if (exam_dates[i] == current_date) {
+            int room = (current_date + i) % ROOM_COUNT + 1; // simple pseudo-random
+            printf("Exam for '%s' today. Assigned to Room %d.\n",
+                   categories[selected_categories[i]], room);
+        }
+    }
+}
+
+int main() {
+    int today;
+
+    printf("Enter training start date (YYYYMMDD): ");
+    scanf("%d", &start_date);
+
+    while (1) {
+        printf("\n1. Schedule Exam\n2. Show Reminders\n3. Assign Room (Today)\n4. Exit\nSelect option: ");
+        int option;
+        scanf("%d", &option);
+
+        if (option == 1) {
+            schedule_exam();
+        } else if (option == 2) {
+            printf("Enter today's date (YYYYMMDD): ");
+            scanf("%d", &today);
+            show_reminders(today);
+        } else if (option == 3) {
+            printf("Enter today's date (YYYYMMDD): ");
+            scanf("%d", &today);
+            assign_exam_room(today);
+        } else if (option == 4) {
+            break;
+        } else {
+            printf("Invalid option.\n");
+        }
+    }
+
+    return 0;
+}
