@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_STUDENTS 5
+#define SUBJECTS 5
+
+typedef struct {
+    char name[20];
+    char nickname[20];
+    float scores[SUBJECTS];
+    float avg;
+} Student;
+
+Student students[MAX_STUDENTS];
+int studentCount;
+
+void inputData() {
+    int i, j;
+    printf("Enter number of students (max %d): ", MAX_STUDENTS);
+    scanf("%d", &studentCount);
+    if (studentCount > MAX_STUDENTS) studentCount = MAX_STUDENTS;
+
+    for (i = 0; i < studentCount; i++) {
+        printf("Student %d name: ", i+1);
+        scanf("%s", students[i].name);
+        printf("Nickname: ");
+        scanf("%s", students[i].nickname);
+
+        float sum = 0;
+        printf("Enter %d subject grades separated by space:\n", SUBJECTS);
+        for (j = 0; j < SUBJECTS; j++) {
+            scanf("%f", &students[i].scores[j]);
+            sum += students[i].scores[j];
+        }
+        students[i].avg = sum / SUBJECTS;
+    }
+}
+
+void printAsciiName(char *name) {
+    while (*name) {
+        printf("%d ", (int)*name);
+        name++;
+    }
+}
+
+void printReversedNickname(char *nickname) {
+    int len = strlen(nickname);
+    for (int i = len - 1; i >= 0; i--) {
+        putchar(nickname[i]);
+    }
+}
+
+void printStudents() {
+    int i;
+    printf("\nStudent info:\n");
+    for (i = 0; i < studentCount; i++) {
+        printf("Name (ASCII): ");
+        printAsciiName(students[i].name);
+        printf(", Nickname (reversed): ");
+        printReversedNickname(students[i].nickname);
+        printf(", Avg Grade: %.2f\n", students[i].avg);
+    }
+}
+
+int main() {
+    inputData();
+    printStudents();
+    return 0;
+}
