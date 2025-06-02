@@ -1,0 +1,40 @@
+// rememberme.c
+#include <stdio.h>
+
+// Immutable array of unsuccessful candidates' info
+const char memorial01_arr[][100] = {
+    "Jinwoo Lee,milliways,lee.jinwoo@email.com",
+    "Minji Choi,milliways,choi.minji@email.com"
+};
+
+// Rolling paper messages
+char rollingpp01[2][3][100] = {
+    {"Ethan: You danced with passion!", "Helena: Never stop dreaming!", "Liam: You inspired me."},
+    {"Jiyeon: Keep shining!", "Ethan: You’ll do great things.", "Helena: I believe in you."}
+};
+
+void showMessages(int candidateIndex) {
+    printf("Messages for %s:\n", memorial01_arr[candidateIndex]);
+    for (int i = 0; i < 3; i++) {
+        printf("- %s\n", rollingpp01[candidateIndex][i]);
+    }
+}
+
+int main() {
+    int choice;
+
+    printf("Select a candidate to view messages:\n");
+    for (int i = 0; i < 2; i++) {
+        printf("%d. %s\n", i + 1, memorial01_arr[i]);
+    }
+    printf("> ");
+    scanf("%d", &choice);
+
+    if (choice >= 1 && choice <= 2) {
+        showMessages(choice - 1);
+    } else {
+        printf("Invalid selection.\n");
+    }
+
+    return 0;
+}
