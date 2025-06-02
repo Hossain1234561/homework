@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_SONGS 7
+#define MAX_MEMBERS 7
+#define MAX_ATTEMPTS 2
+
+// Song structure
+typedef struct {
+    char title[100];
+    char initials[100];
+} Song;
+
+// Member structure
+typedef struct {
+    char name[50];
+    char nickname[50];
+    int completed;
+} Member;
+
+// Global variables
+Song songs[MAX_SONGS];
+int songCount = 0;
+
+Member members[MAX_MEMBERS] = {
+    {"Youngjin", "YJ", 0},
+    {"Arthur", "Art", 0},
+    {"Mina", "MN", 0},
+    {"Jisoo", "JS", 0},
+    {"Hana", "HN", 0},
+    {"Leo", "L", 0},
+    {"Sora", "SR", 0}
+};
+
+// Input songs with initials
+void inputKpopSongInitials() {
+    char title[100];
+    for (int i = 0; i < MAX_SONGS; i++) {
+        printf("Enter song title %d: ", i + 1);
+        fgets(title, sizeof(title), stdin);
+        title[strcspn(title, "\n")] = 0;
+        strcpy(songs[i].title, title);
+        printf("Enter initials for \"%s\": ", title);
+        fgets(songs[i].initials, sizeof(songs[i].initials), stdin);
+        songs[i].initials[strcspn(songs[i].initials, "\n")] = 0;
+        songCount++;
+    }
+}
+
+// Random other member
+int getBlackKnight(int currentIndex) {
+    int newIndex;
+    do {
+        newIndex = rand() % MAX_MEMBERS;
+    } while (newIndex == currentIndex || members[newIndex].completed);
+    return newIndex;
+}
+
+// Teamwork mission
+void completeMission() {
+    int completedCount = 0;
+    for (int i = 0; i < MAX_MEMBERS; i++) {
+        if (members[i].completed) continue;
+
+        printf("%s (%s), guess the song for initials: %s\n",
+               members[i].name, members[i].nickname,
+               songs[i % songCount].initials);
+
+        int success = 0;
+        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+            char guess[100];
+            printf("Attempt %d: ", attempt);
+            fgets(guess, sizeof(guess), stdin);
+            guess[strcspn(guess, "\n")] = 0;
+
+            if (strcmp(guess, songs[i % songCount].title) == 0) {
+                printf("%s, you have successfully completed the mission!\n", members[i].name);
+                members[i].completed = 1;
+                completedCount++;
+                success = 1;
+                break;
+            }
+        }
+
+        if (!success) {
+            int knight = getBlackKnight(i);
+            printf("Black Knight %s (%s), your turn! Initials: %s\n",
+                   members[knight].name, members[knight].nickname,
+                   songs[i % songCount].initials);
+
+            char guess[100];
+            printf("Black Knight's guess: ");
+            fgets(guess, sizeof(guess), stdin);
+            guess[strcspn(guess, "\n")] = 0;
+
+            if (strcmp(guess, songs[i % songCount].title) == 0) {
+                printf("%s, you have successfully completed the mission!\n", members[knight].name);
+                members[knight].completed = 1;
+                completedCount++;
+            } else {
+                printf("Milliways, develop your teamwork further and try again!\n");
+                return;
+            }
+        }
+    }
+
+    printf("Milliways’ teamwork is great!\n");
+}
+
+// Main menu
+int main() {
+    srand(time(NULL));
+    int choice;
+    while (1) {
+        printf("\n[Menu]\n1. Input Songs\n2. Start Teamwork Mission\n3. Exit\nChoose: ");
+        scanf("%d%*c", &choice); // %*c to consume newline
+        if (choice == 1) {
+            inputKpopSongInitials();
+        } else if (choice == 2) {
+            completeMission();
+        } else {
+            break;
+        }
+    }
+    return 0;
+}
