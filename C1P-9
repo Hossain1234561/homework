@@ -1,0 +1,110 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define WORDS_COUNT 10
+#define PICKED_WORDS 5
+#define MAX_TRIES 2
+
+// Function to input words
+void inputWords(char words[WORDS_COUNT][6]) {
+    int i;
+    for (i = 0; i < WORDS_COUNT; i++) {
+        while (1) {
+            printf("Enter word %d (3-5 letters): ", i+1);
+            scanf("%5s", words[i]);
+            int len = strlen(words[i]);
+            if (len >= 3 && len <= 5) break;
+            printf("Word length must be 3 to 5 letters.\n");
+        }
+    }
+}
+
+// Function to pick 5 random words
+void pickRandomWords(int picks[PICKED_WORDS]) {
+    int used[WORDS_COUNT] = {0};
+    int count = 0;
+    while (count < PICKED_WORDS) {
+        int r = rand() % WORDS_COUNT;
+        if (!used[r]) {
+            picks[count++] = r;
+            used[r] = 1;
+        }
+    }
+}
+
+// Print the chosen words
+void printPickedWords(char words[WORDS_COUNT][6], int picks[PICKED_WORDS]) {
+    printf("Random words: ");
+    for (int i = 0; i < PICKED_WORDS; i++) {
+        printf("%s ", words[picks[i]]);
+    }
+    printf("\n");
+}
+
+// Count how many times a word appears in the sentence (simple substring check)
+int countWord(char *sentence, char *word) {
+    int count = 0;
+    char *pos = sentence;
+    int len = strlen(word);
+    while ((pos = strstr(pos, word)) != NULL) {
+        count++;
+        pos += len;
+    }
+    return count;
+}
+
+int main() {
+    char words[WORDS_COUNT][6];
+    int picks[PICKED_WORDS];
+    int tries = 0;
+    char story[200];
+
+    srand(time(NULL));
+
+    inputWords(words);
+
+    while (tries <= MAX_TRIES) {
+        pickRandomWords(picks);
+        printPickedWords(words, picks);
+        printf("Do you like these words? (y/n): ");
+        char ans;
+        scanf(" %c", &ans);
+        if (ans == 'y' || ans == 'Y') break;
+        tries++;
+    }
+
+    while (1) {
+        printf("Write a story using these 5 words (90-100 chars):\n");
+        getchar();  // clear newline
+        fgets(story, sizeof(story), stdin);
+
+        int len = strlen(story);
+        if (story[len-1] == '\n') {
+            story[len-1] = '\0';
+            len--;
+        }
+
+        if (len >= 90 && len <= 100) break;
+        printf("Story length must be between 90 and 100 characters. Try again.\n");
+    }
+
+    // Count words in story (simple count by spaces + 1)
+    int wordCount = 1;
+    for (int i = 0; i < strlen(story); i++) {
+        if (story[i] == ' ') wordCount++;
+    }
+
+    // Count how many times the 5 words appear
+    int totalRepeats = 0;
+    for (int i = 0; i < PICKED_WORDS; i++) {
+        totalRepeats += countWord(story, words[picks[i]]);
+    }
+
+    printf("Story length: %d characters\n", (int)strlen(story));
+    printf("Story words: %d words\n", wordCount);
+    printf("Selected words appeared %d times in total.\n", totalRepeats);
+
+    return 0;
+}
