@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_Q 7
+#define MAX_LEN 45
+
+// Questions
+const char* questions[MAX_Q] = {
+    "1. 어떤 일이 있었고 어떻게 느꼈나요?",
+    "2. 최근 기분은 어땠나요?",
+    "3. 지금 어떤 감정을 느끼고 있나요?",
+    "4. 언제 감정을 더 강하게 느끼나요?",
+    "5. 최근 스트레스 요인은 있었나요?",
+    "6. 감정을 표현한 증상이 있었나요?",
+    "7. 감정을 다루는 전략이 있나요?"
+};
+
+// Answer storage
+char nickname[10];
+char answers[MAX_Q][MAX_LEN];
+
+int main() {
+    char input[MAX_LEN];
+
+    // Get nickname
+    printf("닉네임을 입력하세요 (예: AR): ");
+    scanf("%s", nickname);
+
+    // Input answers
+    for (int i = 0; i < MAX_Q; i++) {
+        while (1) {
+            printf("%s\n> ", questions[i]);
+            getchar(); // clear newline
+            fgets(input, MAX_LEN, stdin);
+
+            // Remove newline
+            int len = strlen(input);
+            if (len > 0 && input[len - 1] == '\n') input[len - 1] = '\0';
+
+            if (strcmp(input, "TBD") == 0 || (len >= 20 && len <= 40)) {
+                strcpy(answers[i], input);
+                break;
+            } else {
+                printf("20~40자 사이로 입력하거나 'TBD'를 입력하세요.\n");
+            }
+        }
+    }
+
+    // Print result
+    printf("\n[%s님의 감정 일기]\n", nickname);
+    for (int i = 0; i < MAX_Q; i++) {
+        if (strcmp(answers[i], "TBD") != 0) {
+            printf("%s\n=> %s\n\n", questions[i], answers[i]);
+        }
+    }
+
+    return 0;
+}
