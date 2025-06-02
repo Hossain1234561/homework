@@ -1,0 +1,75 @@
+#include <stdio.h>
+#include <time.h>
+
+struct Journey {
+    char nickname[10];
+    char date[9];      // YYYYMMDD
+    char content[71];  // 30~70 characters
+    int wow;           // 0 ~ 10
+};
+
+void showWowEffect(int wow) {
+    if (wow <= 3) printf("Wow Effect: Calm\n");
+    else if (wow <= 6) printf("Wow Effect: Exciting\n");
+    else printf("Wow Effect: Meaningful\n");
+}
+
+int getHourFromUser() {
+    char cheat;
+    char timeInput[11];
+    printf("Press T to enter test time or any key to use current time: ");
+    scanf(" %c", &cheat);
+    if (cheat == 'T' || cheat == 't') {
+        printf("Enter test time (YYYYMMDDHH): ");
+        scanf("%s", timeInput);
+        return (timeInput[8] - '0') * 10 + (timeInput[9] - '0');
+    } else {
+        time_t now = time(NULL);
+        struct tm *t = localtime(&now);
+        return t->tm_hour;
+    }
+}
+
+void buildMemorialPark() {
+    int hour = getHourFromUser();
+
+    if (hour < 18 || hour > 22) {
+        printf("Available only from 18:00 to 22:00. Try again later.\n");
+        return;
+    }
+
+    struct Journey j;
+    int len = 0;
+
+    printf("Enter your nickname: ");
+    scanf("%s", j.nickname);
+
+    printf("Enter the date (YYYYMMDD): ");
+    scanf("%s", j.date);
+
+    printf("Enter memory (30~70 characters): ");
+    getchar(); // flush newline
+    fgets(j.content, sizeof(j.content), stdin);
+    while (j.content[len] != '\0') len++;
+    if (len < 30 || len > 70) {
+        printf("Memory must be between 30 and 70 characters.\n");
+        return;
+    }
+
+    printf("Enter wow effect (0-10): ");
+    scanf("%d", &j.wow);
+    if (j.wow < 0 || j.wow > 10) {
+        printf("Invalid wow effect.\n");
+        return;
+    }
+
+    printf("\n--- Journey Recorded ---\n");
+    printf("Nickname: %s\nDate: %.4s-%.2s-%.2s\n", j.nickname, j.date, j.date+4, j.date+6);
+    printf("Memory: %s", j.content);
+    showWowEffect(j.wow);
+}
+
+int main() {
+    buildMemorialPark();
+    return 0;
+}
