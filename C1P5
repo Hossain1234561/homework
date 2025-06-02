@@ -1,0 +1,139 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_CANDIDATES 6
+#define MAX_NAME 50
+#define CATEGORY_COUNT 5
+
+// Candidate info
+char candidateNames[MAX_CANDIDATES][MAX_NAME] = {
+    "Jiyeon Park",
+    "Ethan Smith",
+    "Helena Silva",
+    "Liam Wilson",
+    "Noah Kim",
+    "Sophie Lee"
+};
+
+int candidateIDs[MAX_CANDIDATES] = {123456, 234567, 345678, 456789, 567890, 678901};
+
+// Score sheet: 7 elements per candidate (ID, 5 category scores, total)
+int scoringSheet[MAX_CANDIDATES][7];
+
+void inputScores() {
+    char judge[MAX_NAME], field[MAX_NAME];
+    int scores[CATEGORY_COUNT];
+    char submit;
+
+    while (1) {
+        printf("####################################\n");
+        printf("#     Audition Evaluation Entry    #\n");
+        printf("####################################\n");
+        printf("> Judge Name: ");
+        fgets(judge, MAX_NAME, stdin); judge[strcspn(judge, "\n")] = 0;
+        printf("> Expertise: ");
+        fgets(field, MAX_NAME, stdin); field[strcspn(field, "\n")] = 0;
+
+        for (int i = 0; i < MAX_CANDIDATES; i++) {
+            printf("++++++++++++++++++++++++++++++++++++\n");
+            printf("Candidate: %s\n", candidateNames[i]);
+            scoringSheet[i][0] = candidateIDs[i];
+            for (int j = 0; j < CATEGORY_COUNT; j++) {
+                do {
+                    printf("Score %d (10-100): ", j + 1);
+                    scanf("%d", &scores[j]);
+                } while (scores[j] < 10 || scores[j] > 100);
+                scoringSheet[i][j + 1] = scores[j];
+            }
+            scoringSheet[i][6] = scores[0] + scores[1] + scores[2] + scores[3] + scores[4];
+            printf("------------------------------------\n");
+        }
+
+        getchar(); // clear input buffer
+        printf("++++++++++++++++++++++++++++++++++++\n");
+        printf("Submission completed.\nPlease review your input!\n");
+        for (int i = 0; i < MAX_CANDIDATES; i++)
+            printf("%s: %d\n", candidateNames[i], scoringSheet[i][1]);
+
+        printf("Would you like to submit? (Y/N): ");
+        scanf("%c", &submit);
+        getchar();
+
+        if (submit == 'Y' || submit == 'y') {
+            printf("***Final submission completed.***\n");
+            break;
+        } else {
+            char modName[MAX_NAME];
+            int modID, found;
+            while (1) {
+                printf("Enter candidate name to modify (or type 'exit'): ");
+                fgets(modName, MAX_NAME, stdin);
+                modName[strcspn(modName, "\n")] = 0;
+                if (strcmp(modName, "exit") == 0) break;
+
+                printf("Enter 6-digit ID: ");
+                scanf("%d", &modID);
+                getchar();
+
+                found = 0;
+                for (int i = 0; i < MAX_CANDIDATES; i++) {
+                    if (strcmp(modName, candidateNames[i]) == 0 && modID == candidateIDs[i]) {
+                        found = 1;
+                        for (int j = 0; j < CATEGORY_COUNT; j++) {
+                            do {
+                                printf("New score %d (10-100): ", j + 1);
+                                scanf("%d", &scores[j]);
+                            } while (scores[j] < 10 || scores[j] > 100);
+                            scoringSheet[i][j + 1] = scores[j];
+                        }
+                        scoringSheet[i][6] = scores[0] + scores[1] + scores[2] + scores[3] + scores[4];
+                        printf("Scores updated for %s.\n", modName);
+                        break;
+                    }
+                }
+                if (!found) printf("Candidate not found.\n");
+            }
+        }
+    }
+}
+
+void showFinalWinners() {
+    printf("=======================================\n");
+    printf("Compiling final selection results...\n");
+    printf("=======================================\n");
+
+    // Simple bubble sort by total score
+    for (int i = 0; i < MAX_CANDIDATES - 1; i++) {
+        for (int j = 0; j < MAX_CANDIDATES - i - 1; j++) {
+            if (scoringSheet[j][6] < scoringSheet[j + 1][6]) {
+                int tempID = candidateIDs[j];
+                candidateIDs[j] = candidateIDs[j + 1];
+                candidateIDs[j + 1] = tempID;
+
+                char tempName[MAX_NAME];
+                strcpy(tempName, candidateNames[j]);
+                strcpy(candidateNames[j], candidateNames[j + 1]);
+                strcpy(candidateNames[j + 1], tempName);
+
+                for (int k = 0; k < 7; k++) {
+                    int temp = scoringSheet[j][k];
+                    scoringSheet[j][k] = scoringSheet[j + 1][k];
+                    scoringSheet[j + 1][k] = temp;
+                }
+            }
+        }
+    }
+
+    printf("###########################################\n");
+    printf("# Congratulations! Welcome to Milliways!  #\n");
+    printf("###########################################\n");
+    for (int i = 0; i < 4; i++)
+        printf("%d. %s\n", i + 1, candidateNames[i]);
+}
+
+int main() {
+    inputScores();
+    showFinalWinners();
+    return 0;
+}
