@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
+#define NUM_QUESTIONS 10
+#define NUM_TRAINEES 4
+#define PASS_SCORE 80
+
+// Struct to store question details
+typedef struct {
+    int questionID;
+    char questionContent[256];
+    char correctAnswer[256];
+} KoreanQuestion;
+
+// Struct to store trainee details
+typedef struct {
+    char name[50];
+    char nickname[50];
+    char nationality[50];
+    int quizScore;
+    char passStatus[10];
+} Trainee;
+
+// Struct to store quiz answer details
+typedef struct {
+    int questionID;
+    char correctness;  // 'O' for correct, 'X' for incorrect
+} QuizAnswer;
+
+// Array of Korean questions (Question Bank)
+KoreanQuestion questionBank[NUM_QUESTIONS] = {
+    {1, "What is the Korean word for 'Hello'?", "안녕하세요"},
+    {2, "How do you say 'Goodbye' in Korean?", "안녕히 가세요"},
+    {3, "What is the Korean word for 'Thank you'?", "감사합니다"},
+    {4, "How do you say 'Yes' in Korean?", "네"},
+    {5, "What is the Korean word for 'No'?", "아니요"},
+    {6, "How do you say 'Excuse me' in Korean?", "실례합니다"},
+    {7, "What is the Korean word for 'Please'?", "제발"},
+    {8, "How do you say 'Sorry' in Korean?", "죄송합니다"},
+    {9, "What is the Korean word for 'I love you'?", "사랑해요"},
+    {10, "How do you say 'Good morning' in Korean?", "좋은 아침"}
+};
+
+// Array of trainees
+Trainee trainees[NUM_TRAINEES] = {
+    {"Park Ji-yeon", "Jiyeon", "Korean", 0, "N/A"},
+    {"John Smith", "Johnny", "American", 0, "N/A"},
+    {"Alice Green", "Ali", "British", 0, "N/A"},
+    {"Maria Garcia", "Mari", "Spanish", 0, "N/A"}
+};
+
+// Function to randomize selection of a trainee for the quiz
+void selectRandomTakers() {
+    int randomIndex;
+    srand(time(NULL));  // Seed the random number generator
+
+    // Loop through trainees and select a random non-Korean trainee
+    do {
+        randomIndex = rand() % NUM_TRAINEES;
+    } while (strcmp(trainees[randomIndex].nationality, "Korean") == 0);
+
+    printf("Welcome, %s, to the Korean quiz session!\n", trainees[randomIndex].name);
+
+    // Start the quiz for the selected trainee
+    serveRandomQuiz(&trainees[randomIndex]);
+}
+
+// Function to randomly select 5 unique questions from the question bank
+void serveRandomQuiz(Trainee *trainee) {
+    int questionIDs[5];
+    QuizAnswer answers[5];
+    int totalScore = 0;
+
+    // Randomly select 5 questions
+    printf("\nThe quiz will start in 30 seconds...\n");
+    sleep(30);  // Wait for 30 seconds before starting
+
+    for (int i = 0; i < 5; i++) {
+        int randomIndex;
+        do {
+            randomIndex = rand() % NUM_QUESTIONS;
+        } while (questionIDs[randomIndex] != 0);  // Ensure unique question IDs
+
+        questionIDs[i] = randomIndex + 1;  // Store the question ID
+
+        // Ask the question
+        printf("Question %d: %s\n", questionBank[randomIndex].questionID, questionBank[randomIndex].questionContent);
+        char answer[256];
+        printf("Your answer: ");
+        fgets(answer, sizeof(answer), stdin);
+        answer[strcspn(answer, "\n")] = 0;  // Remove newline character from input
+
+        // Check the answer
+        answers[i].questionID = questionBank[randomIndex].questionID;
+        if (strcmp(answer, questionBank[randomIndex].correctAnswer) == 0) {
+            answers[i].correctness = 'O';
+            totalScore += 20;  // Correct answer
+        } else {
+            answers[i].correctness = 'X';  // Incorrect answer
+        }
+    }
+
+    // Store the results in the trainee struct
+    trainee->quizScore = totalScore;
+    if (totalScore >= PASS_SCORE) {
+        strcpy(trainee->passStatus, "Pass");
+    } else {
+        strcpy(trainee->passStatus, "Fail");
+    }
+
+    // Display the result sheet
+    printf("\nAnswer Sheet for %s (%s):\n", trainee->name, trainee->nickname);
+    for (int i = 0; i < 5; i++) {
+        printf("Question %d: %s - %s\n", questionIDs[i], questionBank[questionIDs[i] - 1].questionContent,
+               answers[i].correctness == 'O' ? "Correct" : "Incorrect");
+    }
+    printf("Total Score: %d\n", trainee->quizScore);
+    printf("Pass Status: %s\n", trainee->passStatus);
+}
+
+// Main function to test the system
+int main() {
+    // Call the function to randomly select a trainee and start the quiz
+    selectRandomTakers();
+    return 0;
+}
