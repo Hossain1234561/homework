@@ -1,116 +1,107 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 
-#define QUESTIONS_PER_ATTEMPT 5
-#define MAX_QUIZ_OPTIONS 10
+#define MAX_ATTEMPTS 3
 
-// Define Hangul consonants and vowels
-char *consonants[] = {"ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ"};
-char *vowels[] = {"ㅏ", "ㅓ", "ㅗ", "ㅜ", "ㅡ", "ㅣ", "ㅐ", "ㅔ", "ㅚ", "ㅟ"};
-char *englishConsonants[] = {"g", "n", "d", "r", "m", "b", "s", "ng", "j", "ch"};
-char *englishVowels[] = {"a", "eo", "o", "u", "eu", "i", "ae", "e", "oe", "wi"};
-
-int totalScore = 0;
-int attemptCount = 0;
-
-// Function to select a random index for questions
-int getRandomIndex(int max) {
-    return rand() % max;
-}
-
-// Function to play the Hangul to English (KE) game
-void playKor2EngGame() {
-    char answer[50];
-    int score = 0;
-    
-    // Present 5 unique random questions
-    for (int i = 0; i < QUESTIONS_PER_ATTEMPT; i++) {
-        int questionIndex = getRandomIndex(10);
-        printf("What is the English alphabet for Hangul '%s'? ", consonants[questionIndex]);
-        fgets(answer, sizeof(answer), stdin);
-        answer[strcspn(answer, "\n")] = 0;  // Remove newline character
-
-        // Check answer
-        if (strcmp(answer, englishConsonants[questionIndex]) == 0) {
-            score += 10; // Correct answer
-        }
-    }
-
-    totalScore = score;
-    printf("You scored %d points!\n", totalScore);
-    attemptCount++;
-}
-
-// Function to play the English to Hangul (EK) game
-void playEng2KorGame() {
-    char answer[50];
-    int score = 0;
-    
-    // Present 5 unique random questions
-    for (int i = 0; i < QUESTIONS_PER_ATTEMPT; i++) {
-        int questionIndex = getRandomIndex(10);
-        printf("What is the Hangul character for '%s'? ", englishVowels[questionIndex]);
-        fgets(answer, sizeof(answer), stdin);
-        answer[strcspn(answer, "\n")] = 0;  // Remove newline character
-
-        // Check answer
-        if (strcmp(answer, vowels[questionIndex]) == 0) {
-            score += 10; // Correct answer
-        }
-    }
-
-    totalScore = score;
-    printf("You scored %d points!\n", totalScore);
-    attemptCount++;
-}
-
-// Function to view results
-void showResult() {
-    printf("\n=== Learning Results ===\n");
-    printf("Total Score: %d\n", totalScore);
-    printf("Attempts: %d\n", attemptCount);
-    printf("========================\n");
-}
-
-// Function to start the Hangul learning session
-void learnHangul() {
+// Define structure to hold voice characteristics
+typedef struct {
     char name[50];
-    int choice;
+    float frequency;  // in Hz
+    float amplitude;  // in dB
+    float jitter;     // in percentage
+} Voice;
 
-    // Get learner's name
-    printf("Enter your name: ");
-    fgets(name, sizeof(name), stdin);
-    name[strcspn(name, "\n")] = 0; // Remove newline character
+// Define ranges for male and female voice characteristics
+typedef struct {
+    float min_freq, max_freq;
+    float min_amp, max_amp;
+    float min_jitter, max_jitter;
+} VoiceRange;
 
-    while (1) {
-        printf("\n=== Hangul Learning Menu ===\n");
-        printf("1. Hangul to English (KE)\n");
-        printf("2. English to Hangul (EK)\n");
-        printf("3. View Results\n");
-        printf("4. Exit\n");
-        printf("Please select an option: ");
-        scanf("%d", &choice);
-        getchar();  // Consume newline left by scanf
+// Function to generate a random value within a given range
+float randomInRange(float min, float max) {
+    return min + (rand() / (RAND_MAX / (max - min)));
+}
 
-        if (choice == 1) {
-            playKor2EngGame();
-        } else if (choice == 2) {
-            playEng2KorGame();
-        } else if (choice == 3) {
-            showResult();
-        } else if (choice == 4) {
-            break;  // Exit the program
-        } else {
-            printf("Invalid choice. Try again.\n");
-        }
+// Function to generate voice characteristics based on gender
+void getMyVoiceFromHeaven(Voice *v, char gender) {
+    VoiceRange maleRange = {85.0, 180.0, 2.5, 3.6, 0.2, 0.6};
+    VoiceRange femaleRange = {165.0, 255.0, 3.5, 4.7, 0.3, 1.0};
+
+    if (gender == 'M' || gender == 'm') {
+        v->frequency = randomInRange(maleRange.min_freq, maleRange.max_freq);
+        v->amplitude = randomInRange(maleRange.min_amp, maleRange.max_amp);
+        v->jitter = randomInRange(maleRange.min_jitter, maleRange.max_jitter);
+    } else {
+        v->frequency = randomInRange(femaleRange.min_freq, femaleRange.max_freq);
+        v->amplitude = randomInRange(femaleRange.min_amp, femaleRange.max_amp);
+        v->jitter = randomInRange(femaleRange.min_jitter, femaleRange.max_jitter);
     }
 }
 
-// Main function
+// Function for guessing a value (generic for frequency, amplitude, or jitter)
+int guessMyValue(float targetValue, const char *label) {
+    float guess;
+    int attempts = 0;
+
+    while (attempts < MAX_ATTEMPTS) {
+        printf("Guess my %s: ", label);
+        scanf("%f", &guess);
+        if (guess == targetValue) {
+            return 1; // Correct guess
+        } else if (guess < targetValue) {
+            printf("Too low! Try again.\n");
+        } else {
+            printf("Too high! Try again.\n");
+        }
+        attempts++;
+    }
+    return 0; // Failed after max attempts
+}
+
+// Function to start the find-my-voice process
+void findMyVoice() {
+    char name[50];
+    char gender;
+    Voice myVoice;
+
+    // Get user name and gender
+    printf("Enter your nickname: ");
+    scanf("%s", name);
+    printf("Enter your gender (M/F): ");
+    getchar();  // To consume newline after scanf
+    scanf("%c", &gender);
+
+    // Generate voice characteristics
+    getMyVoiceFromHeaven(&myVoice, gender);
+
+    printf("\nWelcome, %s! Let's find your voice.\n", name);
+
+    // Guess frequency
+    if (guessMyValue(myVoice.frequency, "frequency")) {
+        printf("Congratulations! You guessed your frequency correctly!\n");
+    } else {
+        printf("You failed to guess your frequency. Better luck next time!\n");
+    }
+
+    // Guess amplitude
+    if (guessMyValue(myVoice.amplitude, "amplitude")) {
+        printf("Congratulations! You guessed your amplitude correctly!\n");
+    } else {
+        printf("You failed to guess your amplitude. Better luck next time!\n");
+    }
+
+    // Guess jitter
+    if (guessMyValue(myVoice.jitter, "voice pulse (jitter)")) {
+        printf("Congratulations! You guessed your voice pulse correctly!\n");
+    } else {
+        printf("You failed to guess your voice pulse. Better luck next time!\n");
+    }
+}
+
 int main() {
-    srand(time(NULL));  // Seed random number generator
-    learnHangul();  // Start learning session
+    srand(time(NULL));  // Seed the random number generator
+    findMyVoice();      // Start the voice training session
     return 0;
 }
