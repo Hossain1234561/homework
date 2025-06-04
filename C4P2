@@ -1,0 +1,116 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define QUESTIONS_PER_ATTEMPT 5
+#define MAX_QUIZ_OPTIONS 10
+
+// Define Hangul consonants and vowels
+char *consonants[] = {"ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ"};
+char *vowels[] = {"ㅏ", "ㅓ", "ㅗ", "ㅜ", "ㅡ", "ㅣ", "ㅐ", "ㅔ", "ㅚ", "ㅟ"};
+char *englishConsonants[] = {"g", "n", "d", "r", "m", "b", "s", "ng", "j", "ch"};
+char *englishVowels[] = {"a", "eo", "o", "u", "eu", "i", "ae", "e", "oe", "wi"};
+
+int totalScore = 0;
+int attemptCount = 0;
+
+// Function to select a random index for questions
+int getRandomIndex(int max) {
+    return rand() % max;
+}
+
+// Function to play the Hangul to English (KE) game
+void playKor2EngGame() {
+    char answer[50];
+    int score = 0;
+    
+    // Present 5 unique random questions
+    for (int i = 0; i < QUESTIONS_PER_ATTEMPT; i++) {
+        int questionIndex = getRandomIndex(10);
+        printf("What is the English alphabet for Hangul '%s'? ", consonants[questionIndex]);
+        fgets(answer, sizeof(answer), stdin);
+        answer[strcspn(answer, "\n")] = 0;  // Remove newline character
+
+        // Check answer
+        if (strcmp(answer, englishConsonants[questionIndex]) == 0) {
+            score += 10; // Correct answer
+        }
+    }
+
+    totalScore = score;
+    printf("You scored %d points!\n", totalScore);
+    attemptCount++;
+}
+
+// Function to play the English to Hangul (EK) game
+void playEng2KorGame() {
+    char answer[50];
+    int score = 0;
+    
+    // Present 5 unique random questions
+    for (int i = 0; i < QUESTIONS_PER_ATTEMPT; i++) {
+        int questionIndex = getRandomIndex(10);
+        printf("What is the Hangul character for '%s'? ", englishVowels[questionIndex]);
+        fgets(answer, sizeof(answer), stdin);
+        answer[strcspn(answer, "\n")] = 0;  // Remove newline character
+
+        // Check answer
+        if (strcmp(answer, vowels[questionIndex]) == 0) {
+            score += 10; // Correct answer
+        }
+    }
+
+    totalScore = score;
+    printf("You scored %d points!\n", totalScore);
+    attemptCount++;
+}
+
+// Function to view results
+void showResult() {
+    printf("\n=== Learning Results ===\n");
+    printf("Total Score: %d\n", totalScore);
+    printf("Attempts: %d\n", attemptCount);
+    printf("========================\n");
+}
+
+// Function to start the Hangul learning session
+void learnHangul() {
+    char name[50];
+    int choice;
+
+    // Get learner's name
+    printf("Enter your name: ");
+    fgets(name, sizeof(name), stdin);
+    name[strcspn(name, "\n")] = 0; // Remove newline character
+
+    while (1) {
+        printf("\n=== Hangul Learning Menu ===\n");
+        printf("1. Hangul to English (KE)\n");
+        printf("2. English to Hangul (EK)\n");
+        printf("3. View Results\n");
+        printf("4. Exit\n");
+        printf("Please select an option: ");
+        scanf("%d", &choice);
+        getchar();  // Consume newline left by scanf
+
+        if (choice == 1) {
+            playKor2EngGame();
+        } else if (choice == 2) {
+            playEng2KorGame();
+        } else if (choice == 3) {
+            showResult();
+        } else if (choice == 4) {
+            break;  // Exit the program
+        } else {
+            printf("Invalid choice. Try again.\n");
+        }
+    }
+}
+
+// Main function
+int main() {
+    srand(time(NULL));  // Seed random number generator
+    learnHangul();  // Start learning session
+    return 0;
+}
