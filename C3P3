@@ -1,0 +1,77 @@
+#include <stdio.h>
+#include <string.h>
+
+#define KEYWORD "specter"
+#define MESSAGE "I confess. After graduating from university, I was blinded by the arrogance of starting a startup and recklessly blocked my friends' paths. I painfully learned that when I am the only one convinced by my idea, it leads to disastrous results. The past Arthur was a ghost of dogmatism and stubbornness."
+
+// Function to convert a character to an 8-bit binary string
+void charToBinary(char c, char *binary) {
+    for (int i = 7; i >= 0; i--) {
+        binary[7 - i] = (c & (1 << i)) ? '1' : '0';
+    }
+    binary[8] = '\0';
+}
+
+// Function to check if the entered word matches the keyword
+int isEasterEgg(char *input) {
+    return strcmp(input, KEYWORD) == 0;
+}
+
+// Function to find and trigger the Easter egg
+void find_easter_egg() {
+    char binary[9];
+    char userInput[9];
+    
+    printf("<<Arthur's Easter Egg>>\n");
+
+    // Convert each character of the keyword into 8-bit binary and reverse the order
+    for (int i = strlen(KEYWORD) - 1; i >= 0; i--) {
+        charToBinary(KEYWORD[i], binary);
+        printf("Binary (reversed): %s\n", binary);
+        
+        // Prompt the user to input corresponding character
+        int validInput = 0;
+        while (!validInput) {
+            printf("Enter the corresponding character for this binary: ");
+            scanf("%s", userInput);
+            validInput = (strcmp(userInput, binary) == 0);
+            if (!validInput) {
+                printf("Incorrect character. Please try again.\n");
+            }
+        }
+    }
+
+    // After collecting the correct characters, check if the full word matches the keyword
+    printf("Now, combine the characters you entered to form a word.\n");
+    char enteredWord[10];
+    printf("Enter the word: ");
+    scanf("%s", enteredWord);
+
+    if (isEasterEgg(enteredWord)) {
+        printf("##Easter Egg Discovered!$$\n");
+        printf("%s\n", MESSAGE);
+    } else {
+        printf("Incorrect word. Returning to menu...\n");
+    }
+}
+
+int main() {
+    char input[30];
+    while (1) {
+        printf("\n== Menu ==\n");
+        printf("Enter 'Arthur' to discover the Easter egg.\n");
+        printf("Enter 'exit' to quit.\n");
+        printf("Select option: ");
+        scanf("%s", input);
+
+        if (strcmp(input, "Arthur") == 0) {
+            find_easter_egg();
+        } else if (strcmp(input, "exit") == 0) {
+            break;
+        } else {
+            printf("Invalid choice. Try again.\n");
+        }
+    }
+
+    return 0;
+}
