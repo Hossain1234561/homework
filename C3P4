@@ -1,0 +1,122 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_TRAINEES 4
+#define MAX_QUESTIONS 10
+#define QUIZ_QUESTIONS 5
+
+// Struct for quiz questions
+typedef struct {
+    int id;
+    char question[100];
+    char answer[100];
+} Question;
+
+// Struct for trainees
+typedef struct {
+    char name[50];
+    char nickname[30];
+    char nationality[30];
+    int score;
+    char pass; // 'Y' or 'N'
+} Trainee;
+
+// Struct for storing answer result
+typedef struct {
+    int questionId;
+    char correctness; // 'O' or 'X'
+} QuizAnswer;
+
+// Question bank
+Question questions[MAX_QUESTIONS] = {
+    {1, "What is 'Hello' in Korean?", "안녕하세요"},
+    {2, "What is 'Thank you' in Korean?", "감사합니다"},
+    {3, "What is 'Goodbye' in Korean?", "안녕히 가세요"},
+    {4, "What is 'Yes' in Korean?", "네"},
+    {5, "What is 'No' in Korean?", "아니요"},
+    {6, "What is 'Love' in Korean?", "사랑"},
+    {7, "What is 'Friend' in Korean?", "친구"},
+    {8, "What is 'Delicious' in Korean?", "맛있어요"},
+    {9, "What is 'Water' in Korean?", "물"},
+    {10, "What is 'Coffee' in Korean?", "커피"}
+};
+
+// Trainee list
+Trainee trainees[MAX_TRAINEES] = {
+    {"John", "Johnny", "USA", 0, 'N'},
+    {"Maria", "Mimi", "Spain", 0, 'N'},
+    {"Chen", "Chen", "China", 0, 'N'},
+    {"Park Ji-yeon", "Jiyeon", "Korea", 0, 'N'}
+};
+
+// Answer record
+QuizAnswer answers[QUIZ_QUESTIONS];
+
+// Select a random non-Korean trainee
+int selectRandomTaker() {
+    int i;
+    do {
+        i = rand() % MAX_TRAINEES;
+    } while (strcmp(trainees[i].nationality, "Korea") == 0);
+    printf("Welcome, %s, to the Korean quiz session!\n\n", trainees[i].name);
+    return i;
+}
+
+// Check and record answer
+void isAnswer(int i, char *input, int *score) {
+    int qid = answers[i].questionId - 1;
+    if (strcmp(input, questions[qid].answer) == 0) {
+        answers[i].correctness = 'O';
+        *score += 20;
+    } else {
+        answers[i].correctness = 'X';
+    }
+}
+
+// Run quiz
+void serveQuiz(int traineeIndex) {
+    int used[MAX_QUESTIONS] = {0};
+    int score = 0;
+    char input[100];
+    printf("Starting quiz...\n\n");
+
+    for (int i = 0; i < QUIZ_QUESTIONS;) {
+        int q = rand() % MAX_QUESTIONS;
+        if (used[q]) continue;
+        used[q] = 1;
+
+        answers[i].questionId = questions[q].id;
+        printf("Q%d: %s\n> ", i + 1, questions[q].question);
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = 0; // remove newline
+        isAnswer(i, input, &score);
+        i++;
+    }
+
+    // Save and display results
+    trainees[traineeIndex].score = score;
+    trainees[traineeIndex].pass = (score >= 80) ? 'Y' : 'N';
+
+    printf("\n--- Quiz Results ---\n");
+    for (int i = 0; i < QUIZ_QUESTIONS; i++) {
+        printf("Q%d (%s): %c\n", answers[i].questionId,
+            questions[answers[i].questionId - 1].question, answers[i].correctness);
+    }
+    printf("Score: %d\n", score);
+    printf("Pass: %c\n", trainees[traineeIndex].pass);
+}
+
+// Main quiz function
+void testKoreanLang() {
+    int idx = selectRandomTaker();
+    serveQuiz(idx);
+}
+
+// Main entry
+int main() {
+    srand(time(NULL));
+    testKoreanLang();
+    return 0;
+}
