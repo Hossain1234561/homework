@@ -1,0 +1,167 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_MEMBERS 5
+#define MAX_QUESTIONS 5
+#define MAX_RESPONSE_LEN 100
+
+// Struct for storing trauma information
+typedef struct {
+    char nickname[30];
+    int age;
+    char trauma[200];
+} TraumaInfo;
+
+// Struct for storing counseling questions
+typedef struct {
+    int id;
+    char question[100];
+} CounselingQuestion;
+
+// Struct for storing counseling responses
+typedef struct {
+    char nickname[30];
+    char question[100];
+    char response[MAX_RESPONSE_LEN + 1];
+} CounselingResponse;
+
+// Global data
+TraumaInfo traumaList[MAX_MEMBERS] = {
+    {"Johnny", 22, ""},
+    {"Mimi", 21, ""},
+    {"Chen", 23, ""},
+    {"Jiyeon", 24, ""},
+    {"Alex", 22, ""}
+};
+
+CounselingQuestion questions[MAX_QUESTIONS] = {
+    {1, "In what situations have you experienced this trauma?"},
+    {2, "How has this situation affected your daily life and emotions?"},
+    {3, "How have you tried to overcome this trauma?"},
+    {4, "What emotions do you associate with this trauma?"},
+    {5, "What kind of support do you think is necessary to overcome this trauma?"}
+};
+
+CounselingResponse responses[MAX_MEMBERS * 3];  // Maximum 3 responses per member
+int responseCount = 0;  // Counter for responses
+
+// Function to find member index based on nickname
+int findMemberIndex(char *nickname) {
+    for (int i = 0; i < MAX_MEMBERS; i++) {
+        if (strcmp(traumaList[i].nickname, nickname) == 0) {
+            return i;
+        }
+    }
+    return -1;  // Member not found
+}
+
+// Function to input trauma description
+void inputTrauma() {
+    char nickname[30];
+    char trauma[200];
+
+    printf("Enter member nickname (or 'exit' to return): ");
+    scanf("%s", nickname);
+
+    if (strcmp(nickname, "exit") == 0) return;
+
+    int index = findMemberIndex(nickname);
+    if (index != -1) {
+        printf("Enter trauma description for %s: ", nickname);
+        getchar();  // To consume the newline character
+        fgets(trauma, sizeof(trauma), stdin);
+        trauma[strcspn(trauma, "\n")] = '\0';  // Remove newline at the end
+        strcpy(traumaList[index].trauma, trauma);
+    } else {
+        printf("Nickname not found.\n");
+    }
+}
+
+// Function to conduct a counseling session
+void startCounseling() {
+    char nickname[30];
+    int index;
+
+    printf("Enter member nickname to start counseling: ");
+    scanf("%s", nickname);
+
+    index = findMemberIndex(nickname);
+    if (index == -1 || strlen(traumaList[index].trauma) == 0) {
+        printf("Invalid member or no trauma recorded for %s.\n", nickname);
+        return;
+    }
+
+    printf("Starting counseling for %s\n", nickname);
+    for (int i = 0; i < 3; i++) {  // Ask 3 random questions
+        char response[MAX_RESPONSE_LEN + 1];
+        printf("Q%d: %s\n", questions[i].id, questions[i].question);
+        getchar();  // To consume the newline character
+        fgets(response, sizeof(response), stdin);
+        response[strcspn(response, "\n")] = '\0';  // Remove newline
+
+        // Ensure response is within limit
+        if (strlen(response) > MAX_RESPONSE_LEN || strlen(response) == 0) {
+            printf("Invalid response! Please enter a response of 1 to %d characters.\n", MAX_RESPONSE_LEN);
+            i--;  // Retry the same question
+        } else {
+            // Store the response
+            strcpy(responses[responseCount].nickname, nickname);
+            strcpy(responses[responseCount].question, questions[i].question);
+            strcpy(responses[responseCount].response, response);
+            responseCount++;
+        }
+    }
+
+    printf("Counseling session for %s completed!\n", nickname);
+}
+
+// Function to view counseling responses
+void viewCounseling() {
+    char nickname[30];
+    int found = 0;
+
+    printf("Enter nickname to view counseling responses: ");
+    scanf("%s", nickname);
+
+    for (int i = 0; i < responseCount; i++) {
+        if (strcmp(responses[i].nickname, nickname) == 0) {
+            if (!found) {
+                printf("\nCounseling for %s\n", nickname);
+                found = 1;
+            }
+            printf("Q: %s\nA: %s\n\n", responses[i].question, responses[i].response);
+        }
+    }
+
+    if (!found) {
+        printf("No counseling data found for %s.\n", nickname);
+    }
+}
+
+// Main function with menu
+void traumaManagementMenu() {
+    char choice;
+    while (1) {
+        printf("\n== Trauma Management Menu ==\n");
+        printf("A. Input Trauma Description\n");
+        printf("B. Start Counseling\n");
+        printf("C. View Counseling Responses\n");
+        printf("Q. Quit\n");
+        printf("Select an option: ");
+        scanf(" %c", &choice);
+
+        switch (choice) {
+            case 'A': case 'a': inputTrauma(); break;
+            case 'B': case 'b': startCounseling(); break;
+            case 'C': case 'c': viewCounseling(); break;
+            case 'Q': case 'q': return;
+            default: printf("Invalid choice. Try again.\n");
+        }
+    }
+}
+
+int main() {
+    traumaManagementMenu();
+    return 0;
+}
