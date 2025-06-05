@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX 6
+#define NAME_LEN 30
+#define DESC_LEN 100
+
+typedef struct {
+    char name[NAME_LEN];
+    char desc[DESC_LEN];
+} Pattern;
+
+Pattern patterns[MAX] = {0};
+char *songs[4][3] = {
+    {"Wave", "Spin", "Lock"},
+    {"Pop", "Slide", "Isolate"},
+    {"Isolate", "Pop", "Spin"},
+    {"Slide", "Wave", "Pop"}
+};
+
+// Load patterns from file
+void loadPatterns() {
+    FILE *fp = fopen("dance_pattern.txt", "r");
+    if (!fp) { printf("File error\n"); exit(1); }
+    for (int i = 0; i < MAX; i++) {
+        fgets(patterns[i].name, NAME_LEN, fp);
+        fgets(patterns[i].desc, DESC_LEN, fp);
+        patterns[i].name[strcspn(patterns[i].name, "\n")] = 0;
+        patterns[i].desc[strcspn(patterns[i].desc, "\n")] = 0;
+    }
+    fclose(fp);
+}
+
+// Ask 4 questions
+int quiz() {
+    int score = 0;
+    srand(time(NULL));
+    for (int i = 0; i < 4; i++) {
+        int idx = rand() % MAX;
+        char input[NAME_LEN];
+        printf("\nQ%d: %s\nYour answer: ", i+1, patterns[idx].desc);
+        fgets(input, NAME_LEN, stdin);
+        input[strcspn(input, "\n")] = 0;
+        if (strcmp(input, patterns[idx].name) == 0) {
+            printf("Correct!\n");
+            score++;
+        } else {
+            printf("Wrong. Ans: %s\n", patterns[idx].name);
+        }
+    }
+    return score;
+}
+
+// Show choreography pattern tree
+void showSongs() {
+    printf("\n--- Song Patterns ---\n");
+    for (int i = 0; i < 4; i++) {
+        printf("Song %d: %s > %s > %s\n", i+1, songs[i][0], songs[i][1], songs[i][2]);
+    }
+}
+
+// Main function
+void learnDancePattern() {
+    loadPatterns();
+    if (quiz() < 3) {
+        printf("\nLess than 3 correct. Try again later.\n");
+        return;
+    }
+    showSongs();
+}
