@@ -1,0 +1,139 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+
+#define MAX 100
+#define STEP_NUM 10
+#define DANCE_NUM 6
+
+typedef struct {
+    char korean[MAX];
+    char english[MAX];
+    char steps[STEP_NUM][MAX];
+    int stepCount;
+} Dance;
+
+typedef struct {
+    char name[MAX];
+    char nickname[MAX];
+    int score;
+} Member;
+
+Member members[] = {
+    {"Kim Minji", "minji", 0},
+    {"Park Jisu", "jisu", 0},
+    {"Lee Haneul", "haneul", 0}
+};
+int memberCount = 3;
+Dance dances[DANCE_NUM];
+
+void shuffle(char arr[][MAX], int n) {
+    for (int i = n - 1; i > 0; i--) {
+        int j = rand() % (i + 1);
+        char temp[MAX];
+        strcpy(temp, arr[i]);
+        strcpy(arr[i], arr[j]);
+        strcpy(arr[j], temp);
+    }
+}
+
+int loadDanceFile(const char *filename) {
+    FILE *fp = fopen(filename, "r");
+    if (!fp) return 0;
+
+    char line[MAX];
+    int idx = 0;
+    while (fgets(line, sizeof(line), fp) && idx < DANCE_NUM) {
+        char *k = strtok(line, "|");
+        char *e = strtok(NULL, "|");
+        char *s = strtok(NULL, "\n");
+
+        if (!k || !e || !s) continue;
+
+        strcpy(dances[idx].korean, k);
+        strcpy(dances[idx].english, e);
+
+        int stepIdx = 0;
+        char *step = strtok(s, ",");
+        while (step && stepIdx < STEP_NUM) {
+            strcpy(dances[idx].steps[stepIdx++], step);
+            step = strtok(NULL, ",");
+        }
+        dances[idx].stepCount = stepIdx;
+        idx++;
+    }
+
+    fclose(fp);
+    return 1;
+}
+
+Member* findMember(char *nick) {
+    for (int i = 0; i < memberCount; i++) {
+        if (strcmp(members[i].nickname, nick) == 0)
+            return &members[i];
+    }
+    return NULL;
+}
+
+void learnDanceStep() {
+    char nick[MAX];
+    Member *m = NULL;
+    int tries = 0;
+
+    while (tries < 3 && !m) {
+        printf("Enter nickname: ");
+        scanf("%s", nick);
+        m = findMember(nick);
+        if (!m) printf("Not found. Try again.\n");
+        tries++;
+    }
+    if (!m) return;
+
+    if (!loadDanceFile("dance_step.txt")) {
+        printf("Failed to load file.\n");
+        return;
+    }
+
+    srand(time(0));
+    int r = rand() % DANCE_NUM;
+    Dance d = dances[r];
+
+    printf("\nDance: %s (%s)\nSteps:\n", d.korean, d.english);
+    for (int i = 0; i < d.stepCount; i++)
+        printf("%s ", d.steps[i]);
+    printf("\n\nMemorize the steps... (10 sec)\n");
+    sleep(10);
+    system("clear || cls");
+
+    char shuffled[STEP_NUM][MAX], input[STEP_NUM][MAX];
+    for (int i = 0; i < d.stepCount; i++)
+        strcpy(shuffled[i], d.steps[i]);
+    shuffle(shuffled, d.stepCount);
+
+    printf("Reorder the correct steps for %s:\n", d.english);
+    for (int i = 0; i < d.stepCount; i++) {
+        printf("%s > ", shuffled[i]);
+        scanf("%s", input[i]);
+    }
+
+    int correct = 0, orderCorrect = 1;
+    for (int i = 0; i < d.stepCount; i++) {
+        if (strcmp(input[i], d.steps[i]) == 0) correct++;
+        else orderCorrect = 0;
+    }
+
+    int score = 0;
+    if (correct == d.stepCount && orderCorrect) score = 100;
+    else if (correct == d.stepCount) score = 50;
+    else if (correct > 0) score = 20;
+
+    m->score += score;
+
+    printf("\nCorrect: ");
+    for (int i = 0; i < d.stepCount; i++) printf("%s ", d.steps[i]);
+    printf("\nYou: ");
+    for (int i = 0; i < d.stepCount; i++) printf("%s ", input[i]);
+    printf("\nScore: %d\n", score);
+}
